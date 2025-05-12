@@ -1,0 +1,18 @@
+[login_endpoint]
+url = "/api/v1/login"
+method = "POST"
+token_field = "Authorization"
+
+[[projects]]
+name = "projectA"
+base_url = "http://projectA/api/v1"
+description = "用户管理系统"
+
+[[projects]]
+name = "projectB"
+base_url = "http://projectB/api/v2"
+description = "订单管理系统"
+
+active_projects = ["projectA"]
+default_project = "projectA"
+global_base_url = "http://default/api"

@@ -1,0 +1,47 @@
+{
+  "tests": [
+    {
+      "name": "Get Inventory Stats",
+      "project": "projectB",
+      "url": "/inventory/stats",
+      "method": "GET",
+      "expected_status": 200,
+      "expected_body": '{"total_items":500,"low_stock":20}'
+    },
+    {
+      "name": "Update Inventory",
+      "project": "projectB",
+      "url": "/inventory/{{item_id}}",
+      "method": "POST",
+      "body_template": {
+        "quantity": "{{quantity}}"
+      },
+      "pre_request": {
+        "name": "Admin Login Success",
+        "extract": {
+          "token": "$.token",
+          "item_id": "$.id"
+        }
+      },
+      "parameters": [
+        {
+          "values": {
+            "item_id": "1",
+            "quantity": "100"
+          },
+          "expected_status": 200,
+          "expected_body": '{"id":1,"quantity":100}'
+        },
+        {
+          "values": {
+            "item_id": "999",
+            "quantity": "-1"
+          },
+          "expected_status": 400,
+          "expected_body": '{"error":"Invalid quantity"}'
+        }
+      ],
+      "expected_status": 200
+    }
+  ]
+}

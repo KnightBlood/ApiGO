@@ -1,0 +1,90 @@
+tests:
+  - name: "Login"
+    url: "/api/v1/login"
+    method: "POST"
+    body_template:
+      username: "user_{{index}}"
+      password: "123456"
+    parameters:
+      - values:
+          username: "admin"
+          password: "123456"
+        expected_status: 200
+        expected_body: '{"token":"abc123xyz"}'
+
+  - name: "Create Multiple Users"
+    url: "/api/v1/users"
+    method: "POST"
+    body_template:
+      name: "user_{{index}}"
+      email: "user_{{index}}@example.com"
+    pre_request:
+      name: "Login"
+      loop_count: 3
+      extract:
+        token: "$.token"
+    parameters:
+      - values:
+          name: "user_0"
+          email: "user_0@example.com"
+        expected_status: 201
+        expected_body: '{"id":1,"name":"user_0"}'
+      - values:
+          name: "user_1"
+          email: "user_1@example.com"
+        expected_status: 201
+        expected_body: '{"id":2,"name":"user_1"}'
+      - values:
+          name: "user_2"
+          email: "user_2@example.com"
+        expected_status: 201
+        expected_body: '{"id":3,"name":"user_2"}'
+
+  - name: "Get User Info"
+    url: "/api/v1/users/{{userId}}"
+    method: "GET"
+    pre_request:
+      name: "Create Multiple Users"
+      loop_count: 3
+      extract:
+        userId: "$.id"
+    parameters:
+      - values:
+          userId: "1"
+        expected_status: 200
+        expected_body: '{"id":1,"name":"user_0"}'
+      - values:
+          userId: "2"
+        expected_status: 200
+        expected_body: '{"id":2,"name":"user_1"}'
+      - values:
+          userId: "3"
+        expected_status: 200
+        expected_body: '{"id":3,"name":"user_2"}'
+
+  - name: "Create Post"
+    url: "/api/v1/posts"
+    method: "POST"
+    body_template:
+      title: "foo"
+      body: "bar"
+    pre_request:
+      name: "Get User Info"
+      extract:
+        token: "header:Authorization"
+
+  - name: "Circular Dependency Test"
+    url: "/api/v1/circular"
+    method: "GET"
+    pre_request:
+      name: "Circular Dependency Dependent"
+      extract:
+        dummy: "$.dummy"
+
+  - name: "Circular Dependency Dependent"
+    url: "/api/v1/circular-dependent"
+    method: "GET"
+    pre_request:
+      name: "Circular Dependency Test"
+      extract:
+        dummy: "$.dummy"

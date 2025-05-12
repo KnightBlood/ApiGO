@@ -1,0 +1,60 @@
+tests:
+  - name: "Create Order Success"
+    project: "projectA"
+    url: "/orders"
+    method: "POST"
+    tags: ["smoke", "order"]
+    priority: 2
+    body_template:
+      product_id: "{{product_id}}"
+      quantity: "{{quantity}}"
+      user_id: "{{user_id}}"
+    pre_request:
+      name: "Login Success"
+      extract:
+        token: "$.token"
+    parameters:
+      - values:
+          product_id: "1"
+          quantity: "2"
+          user_id: "1"
+        expected_status: 201
+        expected_body: '{"id":1001,"total":"200.00"}'
+        tags: ["positive", "order"]
+        priority: 2
+      - values:
+          product_id: "2"
+          quantity: "abc"
+          user_id: "1"
+        expected_status: 400
+        expected_body: '{"error":"Invalid quantity format"}'
+        tags: ["negative", "order"]
+        priority: 1
+    expected_status: 201
+
+  - name: "Get Order Details"
+    project: "projectA"
+    url: "/orders/{{order_id}}"
+    method: "GET"
+    tags: ["smoke", "order"]
+    priority: 1
+    pre_request:
+      name: "Create Order Success"
+      extract:
+        order_id: "$.id"
+    params_template:
+      details: "full"
+    parameters:
+      - values:
+          order_id: "1001"
+        expected_status: 200
+        expected_body: '{"id":1001,"status":"completed"}'
+        tags: ["positive", "order"]
+        priority: 1
+      - values:
+          order_id: "9999"
+        expected_status: 404
+        expected_body: '{"error":"Order not found"}'
+        tags: ["negative", "order"]
+        priority: 2
+    expected_status: 200

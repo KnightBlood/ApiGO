@@ -1,0 +1,92 @@
+tests:
+  - name: "Login Success"
+    project: "projectA"
+    url: "/login"
+    method: "POST"
+    tags: ["smoke", "auth"]
+    priority: 2
+    body_template:
+      username: "admin"
+      password: "123456"
+    parameters:
+      - values:
+          username: "admin"
+          password: "wrongpass"
+        expected_status: 401
+        expected_body: '{"error":"Invalid credentials"}'
+        tags: ["negative", "auth"]
+        priority: 1
+      - values:
+          username: "user1"
+          password: "123456"
+        expected_status: 200
+        expected_body: '{"token":"abc123xyz","id":1,"username":"user1"}'
+        tags: ["positive", "auth"]
+        priority: 2
+    expected_status: 200
+    expected_body: '{"token":"abc123xyz"}'
+
+  - name: "Get User Info"
+    project: "projectA"
+    url: "/users/{{userId}}"
+    method: "GET"
+    tags: ["smoke", "user"]
+    priority: 1
+    pre_request:
+      name: "Login Success"
+      extract:
+        token: "$.token"
+        userId: "$.id"
+    params_template:
+      fields: "basic"
+    parameters:
+      - values:
+          userId: "1"
+        expected_status: 200
+        expected_body: '{"id":1,"name":"Leanne Graham"}'
+        tags: ["positive", "user"]
+        priority: 1
+      - values:
+          userId: "999"
+        expected_status: 404
+        expected_body: '{"error":"User not found"}'
+        tags: ["negative", "user"]
+        priority: 2
+    expected_status: 200
+    expected_body: '{"id":1,"name":"Leanne Graham"}'
+
+  - name: "Create User"
+    project: "projectA"
+    url: "/users"
+    method: "POST"
+    tags: ["regression", "user"]
+    priority: 1
+    body_template:
+      name: "{{name}}"
+      email: "{{email}}"
+      username: "{{username}}"
+      password: "{{password}}"
+    pre_request:
+      name: "Login Success"
+      extract:
+        token: "$.token"
+    parameters:
+      - values:
+          name: "Leanne Graham"
+          email: "leanne@example.com"
+          username: "user1"
+          password: "123456"
+        expected_status: 201
+        expected_body: '{"id":101,"name":"Leanne Graham"}'
+        tags: ["positive", "user"]
+        priority: 2
+      - values:
+          name: "Invalid User"
+          email: "invalid"
+          username: "user1"
+          password: "123456"
+        expected_status: 400
+        expected_body: '{"error":"Invalid email format"}'
+        tags: ["negative", "user"]
+        priority: 1
+    expected_status: 201

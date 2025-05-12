@@ -1,0 +1,18 @@
+[[tests]]
+name = "Get API Documentation"
+project = "projectA"
+url = "/api/v1/docs"
+method = "GET"
+
+[[tests]]
+name = "Create Product with Tags"
+project = "projectA"
+url = "/products"
+method = "POST"
+body_template = { name = "{{name}}", price = "{{price}}" }
+pre_request = { name = "Login Success", extract = { token = "$.token" } }
+parameters = [
+  { values = { name = "Wireless Mouse", price = "29.99" }, expected_status = 201 },
+  { values = { name = "Invalid Price", price = "abc" }, expected_status = 400, expected_body = '{"error":"Invalid price format"}' }
+]
+expected_status = 201

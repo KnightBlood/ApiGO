@@ -1,0 +1,68 @@
+tests:
+  - name: "Get Product List"
+    project: "projectB"
+    url: "/products"
+    method: "GET"
+    tags: ["smoke", "product"]
+    priority: 2
+    params_template:
+      category: "electronics"
+      limit: "10"
+    expected_status: 200
+    expected_body: '[{"id":1,"name":"Laptop"},{"id":2,"name":"Smartphone"}]'
+
+  - name: "Get Product Details"
+    project: "projectB"
+    url: "/products/{{product_id}}"
+    method: "GET"
+    tags: ["regression", "product"]
+    priority: 1
+    params_template:
+      details: "full"
+    parameters:
+      - values:
+          product_id: "1"
+        expected_status: 200
+        expected_body: '{"id":1,"name":"Laptop","price":"999.99"}'
+        tags: ["positive", "product"]
+        priority: 2
+      - values:
+          product_id: "999"
+        expected_status: 404
+        expected_body: '{"error":"Product not found"}'
+        tags: ["negative", "product"]
+        priority: 1
+    expected_status: 200
+
+  - name: "Create Product"
+    project: "projectB"
+    url: "/products"
+    method: "POST"
+    tags: ["regression", "product"]
+    priority: 1
+    body_template:
+      name: "{{name}}"
+      description: "{{description}}"
+      price: "{{price}}"
+    pre_request:
+      name: "Admin Login Success"
+      extract:
+        token: "$.token"
+    parameters:
+      - values:
+          name: "Wireless Mouse"
+          description: "Ergonomic wireless mouse"
+          price: "29.99"
+        expected_status: 201
+        expected_body: '{"id":101,"name":"Wireless Mouse"}'
+        tags: ["positive", "product"]
+        priority: 2
+      - values:
+          name: ""
+          description: "Test empty name"
+          price: "19.99"
+        expected_status: 400
+        expected_body: '{"error":"Product name required"}'
+        tags: ["negative", "product"]
+        priority: 1
+    expected_status: 201

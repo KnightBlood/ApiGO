@@ -1,0 +1,84 @@
+tests:
+  - name: "Admin Login Success"
+    project: "projectB"
+    url: "/admin/login"
+    method: "POST"
+    tags: ["smoke", "auth"]
+    priority: 2
+    body_template:
+      username: "admin"
+      password: "123456"
+    parameters:
+      - values:
+          username: "admin"
+          password: "wrongpass"
+        expected_status: 401
+        expected_body: '{"error":"Invalid credentials"}'
+        tags: ["negative", "auth"]
+        priority: 1
+      - values:
+          username: "editor"
+          password: "123456"
+        expected_status: 200
+        expected_body: '{"token":"xyz789abc","role":"editor"}'
+        tags: ["positive", "auth"]
+        priority: 2
+    expected_status: 200
+    expected_body: '{"token":"xyz789abc"}'
+
+  - name: "Create Category"
+    project: "projectB"
+    url: "/admin/categories"
+    method: "POST"
+    tags: ["regression", "category"]
+    priority: 1
+    body_template:
+      name: "{{name}}"
+      description: "{{description}}"
+    pre_request:
+      name: "Admin Login Success"
+      extract:
+        token: "$.token"
+    parameters:
+      - values:
+          name: "Electronics"
+          description: "Electronic devices"
+        expected_status: 201
+        expected_body: '{"id":1,"name":"Electronics"}'
+        tags: ["positive", "category"]
+        priority: 2
+      - values:
+          name: ""
+          description: "Empty category name"
+        expected_status: 400
+        expected_body: '{"error":"Category name required"}'
+        tags: ["negative", "category"]
+        priority: 1
+    expected_status: 201
+
+  - name: "Delete Product"
+    project: "projectB"
+    url: "/admin/products/{{product_id}}"
+    method: "DELETE"
+    tags: ["regression", "product"]
+    priority: 1
+    pre_request:
+      name: "Admin Login Success"
+      extract:
+        token: "$.token"
+    params_template:
+      force: "true"
+    parameters:
+      - values:
+          product_id: "1"
+        expected_status: 200
+        expected_body: '{"message":"Product deleted"}'
+        tags: ["positive", "product"]
+        priority: 2
+      - values:
+          product_id: "999"
+        expected_status: 404
+        expected_body: '{"error":"Product not found"}'
+        tags: ["negative", "product"]
+        priority: 1
+    expected_status: 200
