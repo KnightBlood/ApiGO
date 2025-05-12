@@ -1,21 +1,21 @@
-// 项目构建产物
-bin/
-build/
+# 项目构建产物
+/bin/
+/build/
 test.out
 
-// 配置文件（包含敏感信息）
+# 配置文件（包含敏感信息）
 .env
 .env.local
 
-// IDE配置文件
-.idea/
-.vscode/
+#IDE配置文件
+/.idea/
+/.vscode/
 
-// Go相关
-vendor/
+# Go相关
+/vendor/
 *.test
 
-// 日志和临时文件
+#日志和临时文件
 *.log
 *.tmp
 
