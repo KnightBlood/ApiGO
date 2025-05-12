@@ -178,4 +178,4 @@ $ java -jar allure-commandline/bin/allure.jar generate reports/allure/results -o
 5. Allure报告需要Node.js环境支持
 
 ## 📚 示例项目
-项目示例：[https://github.com/KnightBlood/ApiGO](https://github.com/yourname/apigo)
+项目示例：[https://github.com/KnightBlood/ApiGO](https://github.com/KnightBlood/ApiGO)
